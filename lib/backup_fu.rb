@@ -54,6 +54,11 @@ class BackupFu
       cmd = niceify "gzip -f #{tar_path}"
       puts "\nGzip: #{cmd}" if @verbose
       `#{cmd}`
+      
+      # Delete the .sql
+      cmd = niceify "rm -f #{dump_base_path}/#{db_filename}"
+      puts "\nDeleting the original .sql" if @verbose
+      `#{cmd}`
     end
     
   end
@@ -118,19 +123,32 @@ class BackupFu
   
   def cleanup
     count = @fu_conf[:keep_backups].to_i
-    backups = Dir.glob("#{dump_base_path}/*.{sql}")
+    backups = Dir.glob("#{dump_base_path}/*.{gz}")
     if count >= backups.length
       puts "no old backups to cleanup"
     else
-      puts "keeping #{count} of #{backups.length} backups"
+      puts "keeping #{count} of #{backups.length} local backups"
       
       files_to_remove = backups - backups.last(count)
-      files_to_remove = files_to_remove.concat(Dir.glob("#{dump_base_path}/*.{gz}")[0, files_to_remove.length]) unless @fu_conf[:disable_tar_gzip]
+      #files_to_remove = files_to_remove.concat(Dir.glob("#{dump_base_path}/*.{gz}")[0, files_to_remove.length]) unless @fu_conf[:disable_tar_gzip]
       
       files_to_remove.each do |f|
         File.delete(f)
       end
       
+    end
+    
+    # Deleting stuff from Amazon too
+    establish_s3_connection
+    backups = AWS::S3::Bucket.find(@fu_conf[:s3_bucket], :prefix => @fu_conf[:app_name])
+    if count >= backups.objects.length
+      puts "no old backups to cleanup"
+    else
+      puts "keeping #{count} of #{backups.objects.length} S3 backups"
+      sorted = backups.objects.sort {|a,b| a.key <=> b.key}
+      (backups.objects.length-count).times do
+        backups.objects.first.delete
+      end
     end
   end
   

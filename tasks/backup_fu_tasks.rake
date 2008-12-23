@@ -8,6 +8,7 @@ desc "Dumps the database and backs it up remotely to Amazon S3. (task added by: 
 task :backup do
   b = BackupFu.new
   b.backup
+  b.cleanup
 end
 
 namespace :backup_fu do
@@ -34,6 +35,7 @@ namespace :backup_fu do
   task :backup do
     b = BackupFu.new
     b.backup
+    b.cleanup
   end
 
   desc "Backs up both the DB and static files."
