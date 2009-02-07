@@ -350,7 +350,7 @@ class BackupFu
       puts "Static Path: #{p}" if @verbose
 
       if @fu_conf[:compressor] == 'zip'
-        cmd = niceify "zip -r #{zip_switch} #{static_compressed_path} #{p}"
+        cmd = niceify "zip -r #{zip_switches} #{static_compressed_path} #{p}"
         puts "\nZip: #{cmd}\n" if @verbose
         `#{cmd}`
       else
