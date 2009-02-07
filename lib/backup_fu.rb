@@ -184,18 +184,20 @@ class BackupFu
 
     end
     
-    # Deleting stuff from Amazon too
-    establish_s3_connection
-    backups = AWS::S3::Bucket.find(@fu_conf[:s3_bucket], :prefix => @fu_conf[:app_name])
-    if count >= backups.objects.length
-      puts "no old backups to cleanup"
-    else
-      puts "keeping #{count} of #{backups.objects.length} S3 backups"
-      sorted = backups.objects.sort {|a,b| a.key <=> b.key}
-      (backups.objects.length-count).times do
-        backups.objects.first.delete
-      end
-    end
+    # This part is not portet to right_aws.
+    #
+    # # Deleting stuff from Amazon too
+    # establish_s3_connection
+    # backups = AWS::S3::Bucket.find(@fu_conf[:s3_bucket], :prefix => @fu_conf[:app_name])
+    # if count >= backups.objects.length
+    #   puts "no old backups to cleanup"
+    # else
+    #   puts "keeping #{count} of #{backups.objects.length} S3 backups"
+    #   sorted = backups.objects.sort {|a,b| a.key <=> b.key}
+    #   (backups.objects.length-count).times do
+    #     backups.objects.first.delete
+    #   end
+    # end
   end
   
   private
