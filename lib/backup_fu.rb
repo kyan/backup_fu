@@ -162,21 +162,16 @@ class BackupFu
 
   def cleanup
     count = @fu_conf[:keep_backups].to_i
-    backups = Dir.glob("#{dump_base_path}/*.{gz}")
-    if count >= backups.length
+    db_backups = Dir.glob("#{dump_base_path}/*_db.tar.gz")
+    if count >= db_backups.length
       puts "no old backups to cleanup"
     else
-      puts "keeping #{count} of #{backups.length} backups"
+      puts "keeping #{count} of #{db_backups.length} backups"
 
-      files_to_remove = backups - backups.last(count)
+      files_to_remove = db_backups - db_backups.last(count)
 
-      if(!@fu_conf[:disable_compression])
-        if(@fu_conf[:compressor] == 'zip')
-          files_to_remove = files_to_remove.concat(Dir.glob("#{dump_base_path}/*.{zip}")[0, files_to_remove.length])
-        else
-          files_to_remove = files_to_remove.concat(Dir.glob("#{dump_base_path}/*.{gz}")[0, files_to_remove.length])
-        end
-      end
+      # Also remove any files with the same prefixes as the removed db backup files
+      files_to_remove = files_to_remove.map { |f| Dir.glob(f.gsub(/_db\.tar\.gz$/, "*")) }.flatten
 
       files_to_remove.each do |f|
         File.delete(f)
