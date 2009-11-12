@@ -168,7 +168,7 @@ class BackupFu
     else
       puts "keeping #{count} of #{db_backups.length} backups"
 
-      files_to_remove = db_backups - db_backups.last(count)
+      files_to_remove = db_backups - db_backups.sort.last(count)
 
       # Also remove any files with the same prefixes as the removed db backup files
       files_to_remove = files_to_remove.map { |f| Dir.glob(f.gsub(/_db\.tar\.gz$/, "*")) }.flatten
